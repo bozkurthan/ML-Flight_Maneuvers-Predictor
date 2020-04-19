@@ -3,12 +3,21 @@
 This project is developing under the Hacettepe University CMP-712 Machine Learning Lecture.
 This repository contains prediction of Basic Flight Maneuvers based on Machine Learning which runs on Gazebo-PX4-Plane.
 
+### Developer Tools & Versions
+
+<b>PX4 version:</b> v1.11.0-beta1-67-g6e18cb85b1
+
+<b>Gazebo multi-robot simulator, version:</b> 9.13.0
+
+### Used Model
+
+![Image of Model](https://user-images.githubusercontent.com/44507545/79702785-ffc1cc80-82af-11ea-83e0-0b322504efd1.png)
+
 ## Flight Maneuver Prediction with Machine Learning Applications in the Gazebo Simulation
 
 <p align="center">
   <b>Proposal</b><br>
 </p>
-
 
 ### 1. Project Idea
 
