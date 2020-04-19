@@ -33,6 +33,8 @@ Simulation in a real-time.
 ### 2. Relevant Papers
 Jones B., & Jenkins K. “A Machine Learned Model of a Hybrid Aircraft,” CS229 Machine Learning, Fall 2016,
 Stanford University
+
+
 Johansen, T. A., Cristofaro, A., Sørensen, K., Hansen, J. M., & Fossen, T. I. (2015, June). On estimation of
 wind velocity, angle-of-attack and sideslip angle of small UAVs using standard sensors. In 2015 International
 Conference on Unmanned Aircraft Systems (ICUAS) (pp. 510-519). IEEE.
