@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 import os
-from sklearn.utils import resample
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 import glob
 
@@ -53,8 +54,13 @@ def fixTimestampsOfAugmentedFiles():
 
 
 if __name__ == "__main__":
+    filename = r"C:\Users\emir\PycharmProjects\ML-Flight_Maneuvers-Predictor\augmented data\actuator outputsaugmented.xlsx"
+    sns.set(rc={'figure.figsize': (20, 10)})
+    df = pd.read_excel(filename, index_col=None, header=0)
+    df.plot(x = "timestamp",y = ["output[2]","output[3]","output[4]","output[5]","output[6]","output[7]"])
+    plt.show()
     # augmentTheData()
-    fixTimestampsOfAugmentedFiles()
+    # fixTimestampsOfAugmentedFiles()
 
 
 # merged_dfs = pd.read_csv(all_files[0],index_col=None,header=0)
