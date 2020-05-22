@@ -24,21 +24,21 @@ def resample_fixed(df, n_new):
 
     return pd.DataFrame(mat_new, index=x_new, columns=df.columns)
 
-def augmentTheData():
-    path = os.getcwd() + "/Flight 10"
+def augmentTheData(flightNum):
+    path = os.getcwd() + "/Flight "+str(flightNum)
     all_files = glob.glob(path + "/*.csv")
 
-    if not os.path.exists(os.getcwd() + "/Flight 10 Augmented"):
-        os.makedirs(os.getcwd() + "/Flight 10 Augmented")
+    if not os.path.exists(os.getcwd() + "/Flight "+str(flightNum)+" Augmented"):
+        os.makedirs(os.getcwd() + "/Flight "+str(flightNum)+" Augmented")
 
     for filename in all_files:
         df = pd.read_csv(filename, index_col=None, header=0)
         resampledDf = resample_fixed(df, 5000)
         baseName = os.path.basename(filename)
-        resampledDf.to_excel(os.getcwd() + "/Flight 10 Augmented/" + baseName[:-5] + "augmented.xlsx", index=None)
+        resampledDf.to_excel(os.getcwd() + "/Flight "+str(flightNum)+" Augmented/" + baseName[:-5] + "augmented.xlsx", index=None)
 
-def fixTimestampsOfAugmentedFiles():
-    path = os.getcwd()+"/Flight 10 Augmented"
+def fixTimestampsOfAugmentedFiles(flightNum):
+    path = os.getcwd()+"/Flight "+str(flightNum)+" Augmented"
     all_files = glob.glob(path+"/*.xlsx")
 
     timestamps = pd.Series()
@@ -66,33 +66,67 @@ def makeFinalCSVFiles(i):
     return df
 
 
+def splitTaggedFiles():
+    if not os.path.exists(os.getcwd() + "/Flights Takeoff"):
+        os.makedirs(os.getcwd() + "/Flights Takeoff")
+    if not os.path.exists(os.getcwd() + "/Flights Climbing"):
+        os.makedirs(os.getcwd() + "/Flights Climbing")
+    if not os.path.exists(os.getcwd() + "/Flights Descending"):
+        os.makedirs(os.getcwd() + "/Flights Descending")
+    if not os.path.exists(os.getcwd() + "/Flights Cruise"):
+        os.makedirs(os.getcwd() + "/Flights Cruise")
+    if not os.path.exists(os.getcwd() + "/Flights Landed"):
+        os.makedirs(os.getcwd() + "/Flights Landed")
+    path = os.getcwd()+"/Flights wTagged"
+    all_files = glob.glob(path+"/*.csv")
+    for i in range(1,len(all_files)+1):
+        df = pd.read_csv(all_files[i-1],index_col=None,header=0)
+        takeoff = df[df["isTakeoff"] == 1]
+        climbing = df[df["isClimbing"] == 1]
+        cruise = df[df["isCruise"] == 1]
+        descending = df[df["isDescending"] == 1]
+        landed = df[df["isLand"] == 1]
+        takeoff.to_csv(os.getcwd()+"/Flights Takeoff/flight"+str(i)+"_takeoff.csv")
+        climbing.to_csv(os.getcwd()+"/Flights Climbing/flight"+str(i)+"_climbing.csv")
+        descending.to_csv(os.getcwd()+"/Flights Descending/flight"+str(i)+"_descending.csv")
+        cruise.to_csv(os.getcwd()+"/Flights Cruise/flight"+str(i)+"_cruise.csv")
+        landed.to_csv(os.getcwd()+"/Flights Landed/flight"+str(i)+"_landed.csv")
+
+def plotData():
+    filename = r"C:\Users\emir\PycharmProjects\ML-Flight_Maneuvers-Predictor\augmented data\actuator outputsaugmented.xlsx"
+    sns.set(rc={'figure.figsize': (20, 10)})
+    df = pd.read_excel(filename, index_col=None, header=0)
+    df.plot(x = "timestamp",y = ["output[2]","output[3]","output[4]","output[5]","output[6]","output[7]"])
+    plt.show()
+
 if __name__ == "__main__":
-    # filename = r"C:\Users\emir\PycharmProjects\ML-Flight_Maneuvers-Predictor\augmented data\actuator outputsaugmented.xlsx"
-    # sns.set(rc={'figure.figsize': (20, 10)})
-    # df = pd.read_excel(filename, index_col=None, header=0)
-    # df.plot(x = "timestamp",y = ["output[2]","output[3]","output[4]","output[5]","output[6]","output[7]"])
-    # plt.show()
-    # augmentTheData()
-    # print("augmentation finished")
-    # fixTimestampsOfAugmentedFiles()
-    if not os.path.exists(os.getcwd() + "/Flights Final"):
-        os.makedirs(os.getcwd() + "/Flights Final")
-    path = os.getcwd()+"/Flights Final"
-    for i in range(1,11):
-        df = makeFinalCSVFiles(i)
-        # df.to_csv(path+"/flight_"+str(i)+"_augmented.csv",index=False)
-        df.to_excel(path+"/flight_"+str(i)+"_augmented.xlsx",index=False)
+    splitTaggedFiles()
+    # fligthNum = 10
+    #
+    # if not os.path.exists(os.getcwd() + "/Flights Final"):
+    #     os.makedirs(os.getcwd() + "/Flights Final")
+    # finalPath = os.getcwd()+"/Flights Final"
+    #
+    # for i in range(1,fligthNum+1):
+    #     augmentTheData(i)
+    #     print("Augmentation of Flight "+str(i)+" finished.")
+    #     fixTimestampsOfAugmentedFiles(i)
+    #     print("Fixing timestamp of Flight "+str(i)+" finished")
+    #     df = makeFinalCSVFiles(i)
+    #     df.to_csv(finalPath+"/flight_"+str(i)+"_augmented.csv",index=False)
+    #     df.to_excel(finalPath+"/flight_"+str(i)+"_augmented.xlsx",index=False)
+    #     print("Making combined csv and excel files for Flight "+str(i)+"finished")
+    # print("All flights combined and preprocessed.")
+    # print("Do you want to split datas with tags. (Y/N) ?")
+    # input1 = input()
+    # if input1 == "Y" or input1 == "y":
+    #     splitTaggedFiles()
+    # else:
+    #     pass
 
 
-# merged_dfs = pd.read_csv(all_files[0],index_col=None,header=0)
-# all_files = all_files[1:]
-# for filename in all_files:
-#     df = pd.read_csv(filename, index_col=None, header=0)
-#     df = df.set_index('timestamp').reindex(merged_dfs.set_index('timestamp').index, method='nearest').reset_index()
-#     merged_dfs = pd.merge(merged_dfs,df,on="timestamp")
-# print(merged_dfs)
-#
-#
-# print(merged_dfs.shape)
-# print(merged_dfs.head())
-# print("test")
+
+
+
+
+
