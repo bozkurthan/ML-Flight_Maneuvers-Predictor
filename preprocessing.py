@@ -3,7 +3,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import sys
 import glob
 
 def resample_fixed(df, n_new):
@@ -52,7 +52,6 @@ def fixTimestampsOfAugmentedFiles(flightNum):
             baseName = os.path.basename(filename)
             df.to_excel(filename, index=None)
 
-
 def makeFinalCSVFiles(i):
     path = os.getcwd()+"/Flight "+str(i)+" Augmented"
     all_files = glob.glob(path+"/*.xlsx")
@@ -64,7 +63,6 @@ def makeFinalCSVFiles(i):
         tempDf = tempDf.drop(['timestamp'],axis=1)
         df = pd.concat([df, tempDf], axis=1)
     return df
-
 
 def splitTaggedFiles():
     if not os.path.exists(os.getcwd() + "/Flights Takeoff"):
@@ -86,11 +84,26 @@ def splitTaggedFiles():
         cruise = df[df["isCruise"] == 1]
         descending = df[df["isDescending"] == 1]
         landed = df[df["isLand"] == 1]
-        takeoff.to_csv(os.getcwd()+"/Flights Takeoff/flight"+str(i)+"_takeoff.csv")
-        climbing.to_csv(os.getcwd()+"/Flights Climbing/flight"+str(i)+"_climbing.csv")
-        descending.to_csv(os.getcwd()+"/Flights Descending/flight"+str(i)+"_descending.csv")
-        cruise.to_csv(os.getcwd()+"/Flights Cruise/flight"+str(i)+"_cruise.csv")
-        landed.to_csv(os.getcwd()+"/Flights Landed/flight"+str(i)+"_landed.csv")
+        takeoff.to_csv(os.getcwd()+"/Flights Takeoff/flight"+str(i)+"_takeoff.csv",index=None)
+        climbing.to_csv(os.getcwd()+"/Flights Climbing/flight"+str(i)+"_climbing.csv",index=None)
+        descending.to_csv(os.getcwd()+"/Flights Descending/flight"+str(i)+"_descending.csv",index=None)
+        cruise.to_csv(os.getcwd()+"/Flights Cruise/flight"+str(i)+"_cruise.csv",index=None)
+        landed.to_csv(os.getcwd()+"/Flights Landed/flight"+str(i)+"_landed.csv",index=None)
+
+def interpolateTaggedData():
+    base_dir = os.getcwd()
+    folders = ('Flights Takeoff', 'Flights Landed', 'Flights Cruise', 'Flights Descending',"Flights Climbing")
+    for folder in folders:
+        path = base_dir+"/"+folder
+        name = folder.split(" ")[1]
+        all_files = glob.glob(path+"/*.csv")
+        for i in range(1,len(all_files)+1):
+            df= pd.read_csv(all_files[i-1],index_col=None,header=0)
+            new_df = resample_fixed(df,500)
+            new_df.to_csv(path+"/flight"+str(i)+"_"+name+"_interpolated.csv",index=None)
+
+
+
 
 def plotData():
     filename = r"C:\Users\emir\PycharmProjects\ML-Flight_Maneuvers-Predictor\augmented data\actuator outputsaugmented.xlsx"
@@ -99,8 +112,17 @@ def plotData():
     df.plot(x = "timestamp",y = ["output[2]","output[3]","output[4]","output[5]","output[6]","output[7]"])
     plt.show()
 
+
+def handle_exception(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+    return
+
+
 if __name__ == "__main__":
-    splitTaggedFiles()
+    sys.excepthook = handle_exception
+
+    # splitTaggedFiles()
+    interpolateTaggedData()
     # fligthNum = 10
     #
     # if not os.path.exists(os.getcwd() + "/Flights Final"):
