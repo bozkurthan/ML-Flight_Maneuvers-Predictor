@@ -120,31 +120,28 @@ def handle_exception(cls, exception, traceback):
 
 if __name__ == "__main__":
     sys.excepthook = handle_exception
+    fligthNum = 10
+    if not os.path.exists(os.getcwd() + "/Flights Final"):
+        os.makedirs(os.getcwd() + "/Flights Final")
+    finalPath = os.getcwd()+"/Flights Final"
 
-    # splitTaggedFiles()
-    interpolateTaggedData()
-    # fligthNum = 10
-    #
-    # if not os.path.exists(os.getcwd() + "/Flights Final"):
-    #     os.makedirs(os.getcwd() + "/Flights Final")
-    # finalPath = os.getcwd()+"/Flights Final"
-    #
-    # for i in range(1,fligthNum+1):
-    #     augmentTheData(i)
-    #     print("Augmentation of Flight "+str(i)+" finished.")
-    #     fixTimestampsOfAugmentedFiles(i)
-    #     print("Fixing timestamp of Flight "+str(i)+" finished")
-    #     df = makeFinalCSVFiles(i)
-    #     df.to_csv(finalPath+"/flight_"+str(i)+"_augmented.csv",index=False)
-    #     df.to_excel(finalPath+"/flight_"+str(i)+"_augmented.xlsx",index=False)
-    #     print("Making combined csv and excel files for Flight "+str(i)+"finished")
-    # print("All flights combined and preprocessed.")
-    # print("Do you want to split datas with tags. (Y/N) ?")
-    # input1 = input()
-    # if input1 == "Y" or input1 == "y":
-    #     splitTaggedFiles()
-    # else:
-    #     pass
+    for i in range(1,fligthNum+1):
+        augmentTheData(i)
+        print("Augmentation of Flight "+str(i)+" finished.")
+        fixTimestampsOfAugmentedFiles(i)
+        print("Fixing timestamp of Flight "+str(i)+" finished")
+        df = makeFinalCSVFiles(i)
+        df.to_csv(finalPath+"/flight_"+str(i)+"_augmented.csv",index=False)
+        df.to_excel(finalPath+"/flight_"+str(i)+"_augmented.xlsx",index=False)
+        print("Making combined csv and excel files for Flight "+str(i)+"finished")
+    print("All flights combined and preprocessed.")
+    print("Do you want to split datas with tags. (Y/N) ?")
+    input1 = input()
+    if input1 == "Y" or input1 == "y":
+        splitTaggedFiles()
+        interpolateTaggedData()
+    else:
+        pass
 
 
 
