@@ -124,7 +124,13 @@ def scaleDataWithMinMaxScaler():
         all_files = glob.glob(base_dir+"/"+i+"/*.csv")
         for i in range(1,len(all_files)+1):
             df = pd.read_csv(all_files[i-1],index_col=None,header=0)
-            new_df = scaler.fit_transform(df)
+            arr = scaler.fit_transform(df.iloc[:,:-5])
+            response_df = df.iloc[:,-5:]
+            new_df = pd.DataFrame(data=arr,  # values
+            index = None,
+            columns = list(df.columns[:-5]))
+            result = pd.concat([new_df, response_df], axis=1, join='inner')
+            result.to_csv(all_files[i-1][:-4]+"_scaled.csv",index=None)
             print(new_df.head())
 
 def plotData():
@@ -139,10 +145,15 @@ def handle_exception(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
     return
 
+def query():
+    df = pd.read_csv(r"C:\Users\emir\PycharmProjects\ML-Flight_Maneuvers-Predictor\Interpolated Flights\Flight 1\flight1_Climbing_interpolated_scaled.csv",index_col=None, header=0)
+    df2 = df["isClimbing"]
+    print(df2)
 
 if __name__ == "__main__":
     sys.excepthook = handle_exception
     fligthNum = 10
+
     scaleDataWithMinMaxScaler()
     # if not os.path.exists(os.getcwd() + "/Flights Final"):
     #     os.makedirs(os.getcwd() + "/Flights Final")

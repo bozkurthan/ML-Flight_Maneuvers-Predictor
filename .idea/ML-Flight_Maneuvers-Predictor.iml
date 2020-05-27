@@ -1,8 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 3.7" jdkType="Python SDK" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/Datas" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 1" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 1 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 10" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 10 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 2" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 2 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 3" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 3 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 4" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 4 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 5" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 5 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 6" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 6 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 7" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 7 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 8" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 8 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 9" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 9 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flights Climbing" />
+      <excludeFolder url="file://$MODULE_DIR$/Flights Cruise" />
+      <excludeFolder url="file://$MODULE_DIR$/Flights Descending" />
+      <excludeFolder url="file://$MODULE_DIR$/Flights Final" />
+      <excludeFolder url="file://$MODULE_DIR$/Flights Landed" />
+      <excludeFolder url="file://$MODULE_DIR$/Flights Takeoff" />
+      <excludeFolder url="file://$MODULE_DIR$/Flights wTagged" />
+      <excludeFolder url="file://$MODULE_DIR$/Interpolated Flights" />
+    </content>
+    <orderEntry type="jdk" jdkName="Python 3.7 (ML-Flight_Maneuvers-Predictor)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="R User Library" level="project" />
     <orderEntry type="library" name="R Skeletons" level="application" />
