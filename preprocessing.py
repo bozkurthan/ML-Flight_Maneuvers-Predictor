@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 import glob
+from sklearn.preprocessing import MinMaxScaler
+
 
 def resample_fixed(df, n_new):
     n_old, m = df.values.shape
@@ -93,6 +95,7 @@ def splitTaggedFiles():
 def interpolateTaggedData():
     base_dir = os.getcwd()
     folders = ('Flights Takeoff', 'Flights Landed', 'Flights Cruise', 'Flights Descending',"Flights Climbing")
+    interpolated_dir = createFoldersForInterpolatedData()
     for folder in folders:
         path = base_dir+"/"+folder
         name = folder.split(" ")[1]
@@ -100,10 +103,29 @@ def interpolateTaggedData():
         for i in range(1,len(all_files)+1):
             df= pd.read_csv(all_files[i-1],index_col=None,header=0)
             new_df = resample_fixed(df,500)
-            new_df.to_csv(path+"/flight"+str(i)+"_"+name+"_interpolated.csv",index=None)
+            new_df.to_csv(interpolated_dir+"/Flight "+str(i)+"/flight"+str(i)+"_"+name+"_interpolated.csv",index=None)
+
+def createFoldersForInterpolatedData():
+    base_dir = os.getcwd()
+    interpolated_dir = base_dir+"/Interpolated Flights"
+    if not os.path.exists(interpolated_dir):
+        os.makedirs(interpolated_dir)
+    for i in range(1,11):
+        if not os.path.exists(interpolated_dir+"/Flight "+str(i)):
+            os.makedirs(interpolated_dir+"/Flight "+str(i))
+    return interpolated_dir
 
 
-
+def scaleDataWithMinMaxScaler():
+    base_dir = os.getcwd()+"/Interpolated Flights"
+    allFolders = os.listdir(base_dir)
+    scaler = MinMaxScaler()
+    for i in allFolders:
+        all_files = glob.glob(base_dir+"/"+i+"/*.csv")
+        for i in range(1,len(all_files)+1):
+            df = pd.read_csv(all_files[i-1],index_col=None,header=0)
+            new_df = scaler.fit_transform(df)
+            print(new_df.head())
 
 def plotData():
     filename = r"C:\Users\emir\PycharmProjects\ML-Flight_Maneuvers-Predictor\augmented data\actuator outputsaugmented.xlsx"
@@ -121,27 +143,28 @@ def handle_exception(cls, exception, traceback):
 if __name__ == "__main__":
     sys.excepthook = handle_exception
     fligthNum = 10
-    if not os.path.exists(os.getcwd() + "/Flights Final"):
-        os.makedirs(os.getcwd() + "/Flights Final")
-    finalPath = os.getcwd()+"/Flights Final"
-
-    for i in range(1,fligthNum+1):
-        augmentTheData(i)
-        print("Augmentation of Flight "+str(i)+" finished.")
-        fixTimestampsOfAugmentedFiles(i)
-        print("Fixing timestamp of Flight "+str(i)+" finished")
-        df = makeFinalCSVFiles(i)
-        df.to_csv(finalPath+"/flight_"+str(i)+"_augmented.csv",index=False)
-        df.to_excel(finalPath+"/flight_"+str(i)+"_augmented.xlsx",index=False)
-        print("Making combined csv and excel files for Flight "+str(i)+"finished")
-    print("All flights combined and preprocessed.")
-    print("Do you want to split datas with tags. (Y/N) ?")
-    input1 = input()
-    if input1 == "Y" or input1 == "y":
-        splitTaggedFiles()
-        interpolateTaggedData()
-    else:
-        pass
+    scaleDataWithMinMaxScaler()
+    # if not os.path.exists(os.getcwd() + "/Flights Final"):
+    #     os.makedirs(os.getcwd() + "/Flights Final")
+    # finalPath = os.getcwd()+"/Flights Final"
+    #
+    # for i in range(1,fligthNum+1):
+    #     augmentTheData(i)
+    #     print("Augmentation of Flight "+str(i)+" finished.")
+    #     fixTimestampsOfAugmentedFiles(i)
+    #     print("Fixing timestamp of Flight "+str(i)+" finished")
+    #     df = makeFinalCSVFiles(i)
+    #     df.to_csv(finalPath+"/flight_"+str(i)+"_augmented.csv",index=False)
+    #     df.to_excel(finalPath+"/flight_"+str(i)+"_augmented.xlsx",index=False)
+    #     print("Making combined csv and excel files for Flight "+str(i)+"finished")
+    # print("All flights combined and preprocessed.")
+    # print("Do you want to split datas with tags. (Y/N) ?")
+    # input1 = input()
+    # if input1 == "Y" or input1 == "y":
+    #     splitTaggedFiles()
+    #     interpolateTaggedData()
+    # else:
+    #     pass
 
 
 
