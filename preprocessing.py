@@ -6,6 +6,8 @@ import seaborn as sns
 import sys
 import glob
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.decomposition import PCA
+
 
 
 def resample_fixed(df, n_new):
@@ -133,6 +135,40 @@ def scaleDataWithMinMaxScaler():
             result.to_csv(all_files[i-1][:-4]+"_scaled.csv",index=None)
             print(new_df.head())
 
+def normalizeDataWithPCA():
+    pca = PCA(n_components=2)
+    df = pd.read_csv(r"C:\Users\t23463int\PycharmProjects\ML-Flight_Maneuvers-Predictor\Interpolated Flights\Flight 1\flight1_Climbing_interpolated_scaled.csv",index_col=None,header=0)
+    df = df[[
+        "roll_body","pitch_body","yaw_body","q_d[0]","q_d[1]","q_d[2]","q_d[3]","thrust_body[0]"
+    ]]
+
+    corrMatrix = df.corr()
+    sns.heatmap(corrMatrix, annot=True)
+    plt.show()
+    principalComponents = pca.fit_transform(df.iloc[:,:-1])
+    principalDf = pd.DataFrame(data = principalComponents
+             , columns = ['principal component 1', 'principal component 2'])
+    response = df.iloc[:,-1:]
+    finalDf = pd.concat([principalDf, response], axis=1)
+
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.set_xlabel('Principal Component 1', fontsize=15)
+    ax.set_ylabel('Principal Component 2', fontsize=15)
+    ax.set_title('2 component PCA', fontsize=20)
+    targets = ['isClimbing',"isTakeoff"]
+    colors = ['r', 'g']
+    for target, color in zip(targets, colors):
+        indicesToKeep = finalDf['target'] == target
+        ax.scatter(finalDf.loc[indicesToKeep, 'principal component 1']
+                   , finalDf.loc[indicesToKeep, 'principal component 2']
+                   , c=color
+                   , s=50)
+    ax.legend(targets)
+    ax.grid()
+    plt.show()
+
+
 def plotData():
     filename = r"C:\Users\emir\PycharmProjects\ML-Flight_Maneuvers-Predictor\augmented data\actuator outputsaugmented.xlsx"
     sns.set(rc={'figure.figsize': (20, 10)})
@@ -154,7 +190,7 @@ if __name__ == "__main__":
     sys.excepthook = handle_exception
     fligthNum = 10
 
-    scaleDataWithMinMaxScaler()
+    normalizeDataWithPCA()
     # if not os.path.exists(os.getcwd() + "/Flights Final"):
     #     os.makedirs(os.getcwd() + "/Flights Final")
     # finalPath = os.getcwd()+"/Flights Final"
