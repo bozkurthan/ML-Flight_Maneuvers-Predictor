@@ -7,8 +7,10 @@ import sys
 import glob
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
-
-
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from sklearn import svm
+from sklearn import metrics
 
 def resample_fixed(df, n_new):
     n_old, m = df.values.shape
@@ -118,8 +120,7 @@ def createFoldersForInterpolatedData():
     return interpolated_dir
 
 
-def scaleDataWithMinMaxScaler():
-    base_dir = os.getcwd()+"/Interpolated Flights"
+def scaleDataWithMinMaxScaler(base_dir):
     allFolders = os.listdir(base_dir)
     scaler = MinMaxScaler()
     for i in allFolders:
@@ -135,39 +136,37 @@ def scaleDataWithMinMaxScaler():
             result.to_csv(all_files[i-1][:-4]+"_scaled.csv",index=None)
             print(new_df.head())
 
-def normalizeDataWithPCA():
-    pca = PCA(n_components=2)
-    df = pd.read_csv(r"C:\Users\t23463int\PycharmProjects\ML-Flight_Maneuvers-Predictor\Interpolated Flights\Flight 1\flight1_Climbing_interpolated_scaled.csv",index_col=None,header=0)
-    df = df[[
-        "roll_body","pitch_body","yaw_body","q_d[0]","q_d[1]","q_d[2]","q_d[3]","thrust_body[0]"
-    ]]
+def normalizeDataWithPCA(path,components = 20):
+    pca = PCA(n_components=components)
+    df = pd.read_csv(path,index_col=None,header=0)
+    # imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+    data =df.iloc[:,:-5]
+    data = data.fillna(0)
+    # imputer = imputer.fit(data)
+    # data = imputer.transform(data)
+    response = df.iloc[:,-5:]
 
-    corrMatrix = df.corr()
-    sns.heatmap(corrMatrix, annot=True)
-    plt.show()
-    principalComponents = pca.fit_transform(df.iloc[:,:-1])
+    principalComponents = pca.fit_transform(data)
+    cols = []
+    for i in range(1,components+1):
+        cols.append("col " + str(i))
     principalDf = pd.DataFrame(data = principalComponents
-             , columns = ['principal component 1', 'principal component 2'])
-    response = df.iloc[:,-1:]
+             , columns =cols)
+
+    # corrMatrix = principalDf.corr()
+    # sns.heatmap(corrMatrix, annot=True)
+    # plt.show()
+
     finalDf = pd.concat([principalDf, response], axis=1)
+    return finalDf
 
-    fig = plt.figure(figsize=(8, 8))
-    ax = fig.add_subplot(1, 1, 1)
-    ax.set_xlabel('Principal Component 1', fontsize=15)
-    ax.set_ylabel('Principal Component 2', fontsize=15)
-    ax.set_title('2 component PCA', fontsize=20)
-    targets = ['isClimbing',"isTakeoff"]
-    colors = ['r', 'g']
-    for target, color in zip(targets, colors):
-        indicesToKeep = finalDf['target'] == target
-        ax.scatter(finalDf.loc[indicesToKeep, 'principal component 1']
-                   , finalDf.loc[indicesToKeep, 'principal component 2']
-                   , c=color
-                   , s=50)
-    ax.legend(targets)
-    ax.grid()
-    plt.show()
+def vectoriseTheData(df):
+    data =df.iloc[:,:-5:]
+    response = df.iloc[:,-5:]
 
+    onedimSamples = np.array(data).reshape(-1)
+    onedimTargets = np.array(response.iloc[0]).reshape(-1)
+    return onedimSamples,onedimTargets
 
 def plotData():
     filename = r"C:\Users\emir\PycharmProjects\ML-Flight_Maneuvers-Predictor\augmented data\actuator outputsaugmented.xlsx"
@@ -175,7 +174,6 @@ def plotData():
     df = pd.read_excel(filename, index_col=None, header=0)
     df.plot(x = "timestamp",y = ["output[2]","output[3]","output[4]","output[5]","output[6]","output[7]"])
     plt.show()
-
 
 def handle_exception(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
@@ -189,8 +187,45 @@ def query():
 if __name__ == "__main__":
     sys.excepthook = handle_exception
     fligthNum = 10
+    components = 20
 
-    normalizeDataWithPCA()
+    train_targetMatris = []
+    train_dataMatris = []
+    test_targetMatris = []
+    test_dataMatris = []
+
+    interpolatedFlightDir = os.getcwd() + "/Interpolated Flights"
+    scaledFlightDir = os.getcwd() + "/Scaled Flights"
+    allFolders = os.listdir(interpolatedFlightDir)
+
+
+    for j in allFolders:
+        all_files = glob.glob(scaledFlightDir+"/"+j+"/*.csv")
+        for i in range(1, len(all_files)+1):
+            normalizedDfWithTarget = normalizeDataWithPCA(all_files[i-1],components)
+            vectorisedSampleDf,vectorisedTargetDf = vectoriseTheData(normalizedDfWithTarget)
+            if j.__contains__("Flight 10"):
+                test_dataMatris.append(vectorisedSampleDf)
+                test_targetMatris.append(vectorisedTargetDf)
+            else:
+                train_dataMatris.append(vectorisedSampleDf)
+                train_targetMatris.append(vectorisedTargetDf)
+
+
+
+
+    X_train = train_dataMatris
+    y_train = train_targetMatris
+    X_test = test_dataMatris
+    y_test = test_targetMatris
+
+    clf = svm.SVC(kernel='linear')  # Linear Kernel
+    clf.fit(X_train, y_train)
+    y_pred = clf.predict(X_test)
+    print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
+    print("Precision:", metrics.precision_score(y_test, y_pred))
+    print("Recall:", metrics.recall_score(y_test, y_pred))
+
     # if not os.path.exists(os.getcwd() + "/Flights Final"):
     #     os.makedirs(os.getcwd() + "/Flights Final")
     # finalPath = os.getcwd()+"/Flights Final"
