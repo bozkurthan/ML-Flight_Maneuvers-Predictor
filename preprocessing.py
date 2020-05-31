@@ -30,8 +30,8 @@ def resample_fixed(df, n_new):
 
     return pd.DataFrame(mat_new, index=x_new, columns=df.columns)
 
-def augmentTheData(flightNum):
-    path = os.getcwd() + "/Flight "+str(flightNum)
+def augmentTheData(baseDir,flightNum):
+    path = baseDir+ "/Flight "+str(flightNum)
     all_files = glob.glob(path + "/*.csv")
 
     if not os.path.exists(os.getcwd() + "/Flight "+str(flightNum)+" Augmented"):
@@ -133,10 +133,13 @@ def scaleDataWithMinMaxScaler(base_dir):
             index = None,
             columns = list(df.columns[:-5]))
             result = pd.concat([new_df, response_df], axis=1, join='inner')
+
+            # Need refactor
+
             result.to_csv(all_files[i-1][:-4]+"_scaled.csv",index=None)
             print(new_df.head())
 
-def normalizeDataWithPCA(path,components = 20):
+def normalizeDataWithPCA(path,components = 25):
     pca = PCA(n_components=components)
     df = pd.read_csv(path,index_col=None,header=0)
     # imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
@@ -166,6 +169,7 @@ def vectoriseTheData(df):
 
     onedimSamples = np.array(data).reshape(-1)
     onedimTargets = np.array(response.iloc[0]).reshape(-1)
+    onedimTargets = ["".join([str(int(x)) for x in onedimTargets])]
     return onedimSamples,onedimTargets
 
 def plotData():
@@ -186,67 +190,73 @@ def query():
 
 if __name__ == "__main__":
     sys.excepthook = handle_exception
-    fligthNum = 10
+    fligthNum = 20
     components = 20
 
-    train_targetMatris = []
-    train_dataMatris = []
-    test_targetMatris = []
-    test_dataMatris = []
+    # train_targetMatris = []
+    # train_dataMatris = []
+    # test_targetMatris = []
+    # test_dataMatris = []
 
-    interpolatedFlightDir = os.getcwd() + "/Interpolated Flights"
-    scaledFlightDir = os.getcwd() + "/Scaled Flights"
-    allFolders = os.listdir(interpolatedFlightDir)
-
-
-    for j in allFolders:
-        all_files = glob.glob(scaledFlightDir+"/"+j+"/*.csv")
-        for i in range(1, len(all_files)+1):
-            normalizedDfWithTarget = normalizeDataWithPCA(all_files[i-1],components)
-            vectorisedSampleDf,vectorisedTargetDf = vectoriseTheData(normalizedDfWithTarget)
-            if j.__contains__("Flight 10"):
-                test_dataMatris.append(vectorisedSampleDf)
-                test_targetMatris.append(vectorisedTargetDf)
-            else:
-                train_dataMatris.append(vectorisedSampleDf)
-                train_targetMatris.append(vectorisedTargetDf)
+    # interpolatedFlightDir = os.getcwd() + "/Interpolated Flights"
+    # scaledFlightDir = os.getcwd() + "/Scaled Flights"
+    # allFolders = os.listdir(interpolatedFlightDir)
 
 
-
-
-    X_train = train_dataMatris
-    y_train = train_targetMatris
-    X_test = test_dataMatris
-    y_test = test_targetMatris
-
-    clf = svm.SVC(kernel='linear')  # Linear Kernel
-    clf.fit(X_train, y_train)
-    y_pred = clf.predict(X_test)
-    print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
-    print("Precision:", metrics.precision_score(y_test, y_pred))
-    print("Recall:", metrics.recall_score(y_test, y_pred))
-
-    # if not os.path.exists(os.getcwd() + "/Flights Final"):
-    #     os.makedirs(os.getcwd() + "/Flights Final")
-    # finalPath = os.getcwd()+"/Flights Final"
+    # for j in allFolders:
+    #     all_files = glob.glob(scaledFlightDir+"/"+j+"/*.csv")
+    #     for i in range(1, len(all_files)+1):
+    #         normalizedDfWithTarget = normalizeDataWithPCA(all_files[i-1],components)
+    #         vectorisedSampleDf,vectorisedTargetDf = vectoriseTheData(normalizedDfWithTarget)
+    #         if j.__contains__("Flight 10"):
+    #             test_dataMatris.append(vectorisedSampleDf)
+    #             test_targetMatris.append(vectorisedTargetDf)
+    #         elif j.__contains__("Flight 9"):
+    #             test_dataMatris.append(vectorisedSampleDf)
+    #             test_targetMatris.append(vectorisedTargetDf)
+    #         elif j.__contains__("Flight 8"):
+    #             test_dataMatris.append(vectorisedSampleDf)
+    #             test_targetMatris.append(vectorisedTargetDf)
+    #         else:
+    #             train_dataMatris.append(vectorisedSampleDf)
+    #             train_targetMatris.append(vectorisedTargetDf)
     #
-    # for i in range(1,fligthNum+1):
-    #     augmentTheData(i)
-    #     print("Augmentation of Flight "+str(i)+" finished.")
-    #     fixTimestampsOfAugmentedFiles(i)
-    #     print("Fixing timestamp of Flight "+str(i)+" finished")
-    #     df = makeFinalCSVFiles(i)
-    #     df.to_csv(finalPath+"/flight_"+str(i)+"_augmented.csv",index=False)
-    #     df.to_excel(finalPath+"/flight_"+str(i)+"_augmented.xlsx",index=False)
-    #     print("Making combined csv and excel files for Flight "+str(i)+"finished")
-    # print("All flights combined and preprocessed.")
-    # print("Do you want to split datas with tags. (Y/N) ?")
-    # input1 = input()
-    # if input1 == "Y" or input1 == "y":
-    #     splitTaggedFiles()
-    #     interpolateTaggedData()
-    # else:
-    #     pass
+    # X_train = train_dataMatris
+    # y_train = train_targetMatris
+    # X_test = test_dataMatris
+    # y_test = test_targetMatris
+
+    # X_train, X_test, y_train, y_test = train_test_split(train_dataMatris, train_targetMatris, test_size=0.10,
+    #                                                     random_state=30)  # 70% training and 30% test
+
+    # clf = svm.SVC(decision_function_shape='ovo')  # Linear Kernel
+    # clf.fit(X_train, np.ravel(y_train))
+    # y_pred = clf.predict(X_test)
+    # print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
+    # print("Precision:", metrics.precision_score(y_test, y_pred,average="micro"))
+    # print("Recall:", metrics.recall_score(y_test, y_pred,average="micro"))
+
+    if not os.path.exists(os.getcwd() + "/Flights Final"):
+        os.makedirs(os.getcwd() + "/Flights Final")
+    finalPath = os.getcwd()+"/Flights Final"
+    augmentPath = os.getcwd()+ "/New dataset"
+    for i in range(11,fligthNum+1):
+        augmentTheData(augmentPath,i)
+        print("Augmentation of Flight "+str(i)+" finished.")
+        fixTimestampsOfAugmentedFiles(i)
+        print("Fixing timestamp of Flight "+str(i)+" finished")
+        df = makeFinalCSVFiles(i)
+        df.to_csv(finalPath+"/flight_"+str(i)+"_augmented.csv",index=False)
+        df.to_excel(finalPath+"/flight_"+str(i)+"_augmented.xlsx",index=False)
+        print("Making combined csv and excel files for Flight "+str(i)+"finished")
+    print("All flights combined and preprocessed.")
+    print("Do you want to split datas with tags. (Y/N) ?")
+    input1 = input()
+    if input1 == "Y" or input1 == "y":
+        splitTaggedFiles()
+        interpolateTaggedData()
+    else:
+        pass
 
 
 
