@@ -11,6 +11,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn import svm
 from sklearn import metrics
+import pickle
 
 def resample_fixed(df, n_new):
     n_old, m = df.values.shape
@@ -119,12 +120,11 @@ def createFoldersForInterpolatedData():
             os.makedirs(interpolated_dir+"/Flight "+str(i))
     return interpolated_dir
 
-
-def scaleDataWithMinMaxScaler(base_dir):
+def scaleDataWithMinMaxScaler(base_dir,scaledDataDir):
     allFolders = os.listdir(base_dir)
     scaler = MinMaxScaler()
-    for i in allFolders:
-        all_files = glob.glob(base_dir+"/"+i+"/*.csv")
+    for j in allFolders:
+        all_files = glob.glob(base_dir+"/"+j+"/*.csv")
         for i in range(1,len(all_files)+1):
             df = pd.read_csv(all_files[i-1],index_col=None,header=0)
             arr = scaler.fit_transform(df.iloc[:,:-5])
@@ -133,10 +133,10 @@ def scaleDataWithMinMaxScaler(base_dir):
             index = None,
             columns = list(df.columns[:-5]))
             result = pd.concat([new_df, response_df], axis=1, join='inner')
-
+            name = all_files[i-1].rsplit("\\",1)[1][:-4]
             # Need refactor
-
-            result.to_csv(all_files[i-1][:-4]+"_scaled.csv",index=None)
+            saving = scaledDataDir+"/"+j+"/"+name+"_scaled.csv"
+            result.to_csv(saving,index=None)
             print(new_df.head())
 
 def normalizeDataWithPCA(path,components = 25):
@@ -188,75 +188,93 @@ def query():
     df2 = df["isClimbing"]
     print(df2)
 
+def train(scaledFlightDir,modelName):
+    train_targetMatris = []
+    train_dataMatris = []
+    test_targetMatris = []
+    test_dataMatris = []
+
+    allFolders = os.listdir(scaledFlightDir)
+
+    for j in allFolders:
+        all_files = glob.glob(scaledFlightDir+"/"+j+"/*.csv")
+        for i in range(1, len(all_files)+1):
+            normalizedDfWithTarget = normalizeDataWithPCA(all_files[i-1],components)
+            vectorisedSampleDf,vectorisedTargetDf = vectoriseTheData(normalizedDfWithTarget)
+            if j.__contains__("Flight 10"):
+                test_dataMatris.append(vectorisedSampleDf)
+                test_targetMatris.append(vectorisedTargetDf)
+            elif j.__contains__("Flight 9"):
+                test_dataMatris.append(vectorisedSampleDf)
+                test_targetMatris.append(vectorisedTargetDf)
+            elif j.__contains__("Flight 8"):
+                test_dataMatris.append(vectorisedSampleDf)
+                test_targetMatris.append(vectorisedTargetDf)
+            else:
+                train_dataMatris.append(vectorisedSampleDf)
+                train_targetMatris.append(vectorisedTargetDf)
+
+    X_train = train_dataMatris
+    y_train = train_targetMatris
+    X_test = test_dataMatris
+    y_test = test_targetMatris
+
+    model = svm.SVC(decision_function_shape='ovo')  # Linear Kernel
+    model.fit(X_train, np.ravel(y_train))
+    y_pred = model.predict(X_test)
+    print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
+    print("Precision:", metrics.precision_score(y_test, y_pred,average="micro"))
+    print("Recall:", metrics.recall_score(y_test, y_pred,average="micro"))
+    pickle.dump(model,open(modelName,'wb'))
+
+def test(scaledFlightDir,modelName):
+    x_test = []
+    y_test = []
+    dir = scaledFlightDir + "\Flight 10"
+    all_files = glob.glob(dir+"/*.csv")
+    for i in range(1, len(all_files) + 1):
+        normalizedDfWithTarget = normalizeDataWithPCA(all_files[i - 1], components)
+        vectorisedSampleDf, vectorisedTargetDf = vectoriseTheData(normalizedDfWithTarget)
+        x_test.append(vectorisedSampleDf)
+        y_test.append(vectorisedTargetDf)
+
+    loaded_model = pickle.load(open(modelName, 'rb'))
+    result = loaded_model.score(x_test, y_test)
+    print(result)
+
 if __name__ == "__main__":
     sys.excepthook = handle_exception
     fligthNum = 20
     components = 20
+    modelName = "finalModel.sav"
+    interpolatedFlightDir = os.getcwd()+"/Interpolated Flights"
+    scaledFlightDir = os.getcwd() + "/Scaled Flights"
 
-    # train_targetMatris = []
-    # train_dataMatris = []
-    # test_targetMatris = []
-    # test_dataMatris = []
+    test(scaledFlightDir,modelName)
 
-    # interpolatedFlightDir = os.getcwd() + "/Interpolated Flights"
-    # scaledFlightDir = os.getcwd() + "/Scaled Flights"
-    # allFolders = os.listdir(interpolatedFlightDir)
-
-
-    # for j in allFolders:
-    #     all_files = glob.glob(scaledFlightDir+"/"+j+"/*.csv")
-    #     for i in range(1, len(all_files)+1):
-    #         normalizedDfWithTarget = normalizeDataWithPCA(all_files[i-1],components)
-    #         vectorisedSampleDf,vectorisedTargetDf = vectoriseTheData(normalizedDfWithTarget)
-    #         if j.__contains__("Flight 10"):
-    #             test_dataMatris.append(vectorisedSampleDf)
-    #             test_targetMatris.append(vectorisedTargetDf)
-    #         elif j.__contains__("Flight 9"):
-    #             test_dataMatris.append(vectorisedSampleDf)
-    #             test_targetMatris.append(vectorisedTargetDf)
-    #         elif j.__contains__("Flight 8"):
-    #             test_dataMatris.append(vectorisedSampleDf)
-    #             test_targetMatris.append(vectorisedTargetDf)
-    #         else:
-    #             train_dataMatris.append(vectorisedSampleDf)
-    #             train_targetMatris.append(vectorisedTargetDf)
-    #
-    # X_train = train_dataMatris
-    # y_train = train_targetMatris
-    # X_test = test_dataMatris
-    # y_test = test_targetMatris
-
-    # X_train, X_test, y_train, y_test = train_test_split(train_dataMatris, train_targetMatris, test_size=0.10,
-    #                                                     random_state=30)  # 70% training and 30% test
-
-    # clf = svm.SVC(decision_function_shape='ovo')  # Linear Kernel
-    # clf.fit(X_train, np.ravel(y_train))
-    # y_pred = clf.predict(X_test)
-    # print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
-    # print("Precision:", metrics.precision_score(y_test, y_pred,average="micro"))
-    # print("Recall:", metrics.recall_score(y_test, y_pred,average="micro"))
-
-    if not os.path.exists(os.getcwd() + "/Flights Final"):
-        os.makedirs(os.getcwd() + "/Flights Final")
-    finalPath = os.getcwd()+"/Flights Final"
-    augmentPath = os.getcwd()+ "/New dataset"
-    for i in range(11,fligthNum+1):
-        augmentTheData(augmentPath,i)
-        print("Augmentation of Flight "+str(i)+" finished.")
-        fixTimestampsOfAugmentedFiles(i)
-        print("Fixing timestamp of Flight "+str(i)+" finished")
-        df = makeFinalCSVFiles(i)
-        df.to_csv(finalPath+"/flight_"+str(i)+"_augmented.csv",index=False)
-        df.to_excel(finalPath+"/flight_"+str(i)+"_augmented.xlsx",index=False)
-        print("Making combined csv and excel files for Flight "+str(i)+"finished")
-    print("All flights combined and preprocessed.")
-    print("Do you want to split datas with tags. (Y/N) ?")
-    input1 = input()
-    if input1 == "Y" or input1 == "y":
-        splitTaggedFiles()
-        interpolateTaggedData()
-    else:
-        pass
+    # if not os.path.exists(os.getcwd() + "/Flights Final"):
+    #     os.makedirs(os.getcwd() + "/Flights Final")
+    # finalPath = os.getcwd()+"/Flights Final"
+    # augmentPath = os.getcwd()+ "/New dataset"
+    # for i in range(11,fligthNum+1):
+    #     augmentTheData(augmentPath,i)
+    #     print("Augmentation of Flight "+str(i)+" finished.")
+    #     fixTimestampsOfAugmentedFiles(i)
+    #     print("Fixing timestamp of Flight "+str(i)+" finished")
+    #     df = makeFinalCSVFiles(i)
+    #     df.to_csv(finalPath+"/flight_"+str(i)+"_augmented.csv",index=False)
+    #     df.to_excel(finalPath+"/flight_"+str(i)+"_augmented.xlsx",index=False)
+    #     print("Making combined csv and excel files for Flight "+str(i)+"finished")
+    # print("All flights combined and preprocessed.")
+    # print("Do you want to split datas with tags. (Y/N) ?")
+    # input1 = input()
+    # if input1 == "Y" or input1 == "y":
+    #     splitTaggedFiles()
+    #     interpolateTaggedData()
+    #     scaleDataWithMinMaxScaler(interpolatedFlightDir,scaledFlightDir)
+    #     train(scaledFlightDir,modelName)
+    # else:
+    #     pass
 
 
 
