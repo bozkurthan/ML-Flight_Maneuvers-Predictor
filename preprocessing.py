@@ -12,6 +12,8 @@ from sklearn.model_selection import train_test_split
 from sklearn import svm
 from sklearn import metrics
 import pickle
+from sklearn.multiclass import OneVsRestClassifier
+
 
 def resample_fixed(df, n_new):
     n_old, m = df.values.shape
@@ -218,8 +220,10 @@ def train(scaledFlightDir,modelName):
     y_train = train_targetMatris
     X_test = test_dataMatris
     y_test = test_targetMatris
+    # clf = OneVsRestClassifier(SVC()).fit(X, y)
 
-    model = svm.SVC(decision_function_shape='ovo')  # Linear Kernel
+    model =OneVsRestClassifier(svm.SVC())
+    # svm.SVC(decision_function_shape='ovo')  # Linear Kernel
     model.fit(X_train, np.ravel(y_train))
     y_pred = model.predict(X_test)
     print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
@@ -250,7 +254,7 @@ if __name__ == "__main__":
     interpolatedFlightDir = os.getcwd()+"/Interpolated Flights"
     scaledFlightDir = os.getcwd() + "/Scaled Flights"
 
-    test(scaledFlightDir,modelName)
+    train(scaledFlightDir,modelName)
 
     # if not os.path.exists(os.getcwd() + "/Flights Final"):
     #     os.makedirs(os.getcwd() + "/Flights Final")
