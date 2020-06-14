@@ -86,7 +86,7 @@ def splitTaggedFiles():
         os.makedirs(os.getcwd() + "/Flights Landed")
     path = os.getcwd()+"/Flights wTagged"
     all_files = glob.glob(path+"/*.csv")
-    for i in range(1,len(all_files)+1):
+    for i in range(16,len(all_files)+1):
         df = pd.read_csv(all_files[i-1],index_col=None,header=0)
         takeoff = df[df["isTakeoff"] == 1]
         climbing = df[df["isClimbing"] == 1]
@@ -107,7 +107,7 @@ def interpolateTaggedData():
         path = base_dir+"/"+folder
         name = folder.split(" ")[1]
         all_files = glob.glob(path+"/*.csv")
-        for i in range(1,len(all_files)+1):
+        for i in range(16,len(all_files)+1):
             df= pd.read_csv(all_files[i-1],index_col=None,header=0)
             new_df = resample_fixed(df,500)
             new_df.to_csv(interpolated_dir+"/Flight "+str(i)+"/flight"+str(i)+"_"+name+"_interpolated.csv",index=None)
@@ -117,13 +117,14 @@ def createFoldersForInterpolatedData():
     interpolated_dir = base_dir+"/Interpolated Flights"
     if not os.path.exists(interpolated_dir):
         os.makedirs(interpolated_dir)
-    for i in range(1,11):
+    for i in range(1,21):
         if not os.path.exists(interpolated_dir+"/Flight "+str(i)):
             os.makedirs(interpolated_dir+"/Flight "+str(i))
     return interpolated_dir
 
 def scaleDataWithMinMaxScaler(base_dir,scaledDataDir):
-    allFolders = os.listdir(base_dir)
+    # allFolders = os.listdir(base_dir)
+    allFolders = ["Flight 16","Flight 17","Flight 18","Flight 19","Flight 20"]
     scaler = MinMaxScaler()
     for j in allFolders:
         all_files = glob.glob(base_dir+"/"+j+"/*.csv")
@@ -206,10 +207,22 @@ def train(scaledFlightDir,modelName):
             if j.__contains__("Flight 10"):
                 test_dataMatris.append(vectorisedSampleDf)
                 test_targetMatris.append(vectorisedTargetDf)
-            elif j.__contains__("Flight 9"):
+            elif j.__contains__("Flight 8"):
                 test_dataMatris.append(vectorisedSampleDf)
                 test_targetMatris.append(vectorisedTargetDf)
-            elif j.__contains__("Flight 8"):
+            elif j.__contains__("Flight 11"):
+                test_dataMatris.append(vectorisedSampleDf)
+                test_targetMatris.append(vectorisedTargetDf)
+            elif j.__contains__("Flight 19"):
+                test_dataMatris.append(vectorisedSampleDf)
+                test_targetMatris.append(vectorisedTargetDf)
+            elif j.__contains__("Flight 18"):
+                test_dataMatris.append(vectorisedSampleDf)
+                test_targetMatris.append(vectorisedTargetDf)
+            elif j.__contains__("Flight 16"):
+                test_dataMatris.append(vectorisedSampleDf)
+                test_targetMatris.append(vectorisedTargetDf)
+            elif j.__contains__("Flight 1"):
                 test_dataMatris.append(vectorisedSampleDf)
                 test_targetMatris.append(vectorisedTargetDf)
             else:
