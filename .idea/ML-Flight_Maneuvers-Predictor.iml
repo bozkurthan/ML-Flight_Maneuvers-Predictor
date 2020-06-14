@@ -13,8 +13,12 @@
       <excludeFolder url="file://$MODULE_DIR$/Flight 14 Augmented" />
       <excludeFolder url="file://$MODULE_DIR$/Flight 15 Augmented" />
       <excludeFolder url="file://$MODULE_DIR$/Flight 16 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 17 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 18 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 19 Augmented" />
       <excludeFolder url="file://$MODULE_DIR$/Flight 2" />
       <excludeFolder url="file://$MODULE_DIR$/Flight 2 Augmented" />
+      <excludeFolder url="file://$MODULE_DIR$/Flight 20 Augmented" />
       <excludeFolder url="file://$MODULE_DIR$/Flight 3" />
       <excludeFolder url="file://$MODULE_DIR$/Flight 3 Augmented" />
       <excludeFolder url="file://$MODULE_DIR$/Flight 4" />
@@ -38,6 +42,7 @@
       <excludeFolder url="file://$MODULE_DIR$/Flights wTagged" />
       <excludeFolder url="file://$MODULE_DIR$/Interpolated Flights" />
       <excludeFolder url="file://$MODULE_DIR$/New dataset" />
+      <excludeFolder url="file://$MODULE_DIR$/New_Dataset_Tagged" />
       <excludeFolder url="file://$MODULE_DIR$/Scaled Flights" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.7 (ML-Flight_Maneuvers-Predictor)" jdkType="Python SDK" />
